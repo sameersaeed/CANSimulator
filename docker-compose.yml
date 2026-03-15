@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  simulator:
+    build: .
+    container_name: cansimulator-sim
+    network_mode: host
+    privileged: true
+    command: ["--simulate"]
+    restart: unless-stopped
+
+  client-demo:
+    build: .
+    container_name: cansimulator-client
+    network_mode: host
+    privileged: true
+    depends_on:
+      - simulator
+    command: >
+      sh -c "sleep 2 && ./cansimulator --dump"
+    restart: "no"
+
+  bench:
+    build: .
+    container_name: cansimulator-bench
+    network_mode: host
+    privileged: true
+    command: ["--bench", "RPM", "1000"]
+    profiles: ["bench"]
+    restart: "no"
