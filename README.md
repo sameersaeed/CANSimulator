@@ -4,7 +4,7 @@
 
 CANSimulator simulates a vehicle's **Electronic Control Unit (ECU)** on a virtual
 **Controller Area Network (CAN)** interface (`vcan0`). It responds to OBD-II
-(SAE J1979) Mode 01 diagnostic requests in real time.
+(SAE J1979) Mode 01 diagnostic requests in real time
 
 The simulator runs two components:
 - A vehicle simulator that continuously updates engine and vehicle state
@@ -12,7 +12,7 @@ The simulator runs two components:
 
 Clients send OBD-II requests to CAN ID **0x7DF**, and ECUs respond with PID values
 on IDs **0x7E8–0x7EF**. See the [Wikipedia](https://en.wikipedia.org/wiki/OBD-II_PIDs#CAN_(11-bit)_bus_format)
-page for details on the 11-bit CAN format.
+page for details on the 11-bit CAN format
 
 ## Prerequisites
 - Linux
@@ -167,7 +167,10 @@ The `--dashboard` flag opens a live SDL2 instrument cluster. It starts the ECU s
 The dashboard includes:
 - Speed (km/h) and RPM arc gauges with color-coded ranges (green / yellow / red)
 - Stat boxes for coolant temp, engine load, MAF, fuel level, and runtime
-- A live CAN request counter in the header
+- Live CAN request counter in the header
+
+<img width="895" height="557" alt="CANSimulator-dashboard" src="https://github.com/user-attachments/assets/8000e181-2177-4912-a40d-f39c773e5c83" />
+
 
 Controls:
 
@@ -177,8 +180,8 @@ Controls:
 | S / Down     | Brake       |
 | Q / Escape   | Quit        |
 
-Hold **W** to increase throttle and RPM. Releasing it lets the engine coast down.  
-Hold **S** to brake. Sensor values like coolant temp, MAF, and engine load update live as RPM changes.
+Hold **W** to increase throttle and RPM - releasing it lets the engine coast down
+Hold **S** to brake - sensor values like coolant temp, MAF, and engine load update live as RPM changes
 
 ---
 
@@ -217,7 +220,7 @@ cd build && ctest --output-on-failure
 
 ## Benchmarking
 
-The `--bench` mode sends the specified number of sequential OBD-II requests and reports the latency statistics.
+The `--bench` mode sends the specified number of sequential OBD-II requests and reports the latency statistics
 
 Sample benchmark with 1000 RPM requests:
 ```bash
