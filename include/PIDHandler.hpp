@@ -20,7 +20,7 @@ enum class PID : uint8_t {
 
 // encoded OBD-II data bytes (A and optionally B)
 struct EncodedPID {
-    uint8_t num_bytes{1};
+    uint8_t numBytes{1};
     uint8_t A{0};
     uint8_t B{0};
 };
@@ -33,10 +33,10 @@ struct PIDResult {
 };
 
 // encode physical OBD-II raw byte val (SAE J1979 table A-6)
-EncodedPID encode_pid(PID pid, double value);
+EncodedPID encodePid(PID pid, double value);
 
 // decode raw bytes (A and B) from Mode 01 response
-std::optional<PIDResult> decode_response(uint8_t pid_byte, uint8_t A, uint8_t B);
+std::optional<PIDResult> decodeResponse(uint8_t pidByte, uint8_t A, uint8_t B);
 
-std::optional<PID> pid_from_name(const std::string& name);
-std::string        pid_to_name(PID pid);
+std::optional<PID> pidFromName(const std::string& name);
+std::string        pidToName(PID pid);

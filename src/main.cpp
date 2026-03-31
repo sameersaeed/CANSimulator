@@ -6,32 +6,32 @@
 #include <thread>
 #include <vector>
 
-#include "logger.hpp"
-#include "metrics.hpp"
-#include "obd_client.hpp"
-#include "obd_server.hpp"
-#include "pid_handler.hpp"
-#include "simulator.hpp"
-#include "vehicle_state.hpp"
+#include "Logger.hpp"
+#include "Metrics.hpp"
+#include "OBDClient.hpp"
+#include "OBDServer.hpp"
+#include "PIDHandler.hpp"
+#include "Simulator.hpp"
+#include "VehicleState.hpp"
 
 #ifdef DASHBOARD_ENABLED
-#include "dashboard.hpp"
+#include "Dashboard.hpp"
 #endif
 
 static std::atomic<bool> g_running{true};
 
-void signal_handler(int) {
+void signalHandler(int) {
     g_running = false;
 }
 
-static void print_usage() {
+static void printUsage() {
     std::cout <<
         "CANSimulator - OBD-II / CAN Bus Simulator & Diagnostic Tool\n\n"
         "Usage:\n"
         "  cansimulator --simulate                  Start ECU simulator + server\n"
         "  cansimulator --query   <PID>             Query a single PID once\n"
         "  cansimulator --dump                      Dump all supported PIDs\n"
-        "  cansimulator --bench   <PID> <count>     Latency/throughput benchmark\n"
+        "  cansimulator --bench   <PID> <count>     latencyUs/throughput benchmark\n"
 #ifdef DASHBOARD_ENABLED
         "  cansimulator --dashboard                 Live SDL2 dashboard with controls\n"
 #endif
@@ -44,7 +44,7 @@ static void print_usage() {
         "[2]  $ ./cansimulator --bench RPM 1000\n";
 }
 
-static int run_simulate() {
+static int runSimulate() {
     Logger::info("CANSimulator starting on vcan0");
 
     VehicleState state;
@@ -52,8 +52,8 @@ static int run_simulate() {
     Simulator    sim(state);
     OBDServer    server(state, metrics);
 
-    std::thread sim_thread   ([&] { sim.run();    });
-    std::thread server_thread([&] { server.run(); });
+    std::thread simThread   ([&] { sim.run();    });
+    std::thread serverThread([&] { server.run(); });
 
     Logger::info("Simulator and OBDServer are now running");
 
@@ -61,13 +61,13 @@ static int run_simulate() {
     while (g_running.load()) {
         std::this_thread::sleep_for(std::chrono::seconds(5));
 
-        auto count = metrics.request_count();
+        auto count = metrics.requestCount();
         if (count > 0) {
-            Logger::info("Requests: "   + std::to_string(count)
-                       + " | Avg: "     + std::to_string(metrics.avg_latency_us() / 1000.0).substr(0, 6) + " ms"
-                       + " | MaxLat: "  + std::to_string(metrics.max_latency_us() / 1000.0).substr(0, 6) + " ms"
-                       + " | RPM: "     + std::to_string(static_cast<int>(state.rpm.load()))
-                       + " | Speed: "   + std::to_string(static_cast<int>(state.speed.load())) + " km/h");
+            Logger::info("Requests: " + std::to_string(count) + 
+                " | Avg: "     + std::to_string(metrics.avgLatencyUs() / 1000.0).substr(0, 6) + " ms" + 
+                " | MaxLat: "  + std::to_string(metrics.maxLatencyUs() / 1000.0).substr(0, 6) + " ms" + 
+                " | RPM: "     + std::to_string(static_cast<int>(state.rpm.load())) + 
+                " | Speed: "   + std::to_string(static_cast<int>(state.speed.load())) + " km/h");
         }
     }
 
@@ -75,38 +75,36 @@ static int run_simulate() {
     state.running = false;
     server.stop();
 
-    sim_thread.join();
-    server_thread.join();
-    Logger::info("CANSimulator stopped. Total requests served: "
-                 + std::to_string(metrics.request_count()));
+    simThread.join();
+    serverThread.join();
+    Logger::info("CANSimulator stopped. Total requests served: "  + std::to_string(metrics.requestCount()));
 
     return 0;
 }
 
-static int run_query(const std::string& pid_name) {
-    auto pid = pid_from_name(pid_name);
+static int runQuery(const std::string& pidName) {
+    std::optional<PID> pid = pidFromName(pidName);
     if (!pid) {
-        std::cerr << "Unknown PID: '" << pid_name << "'. Run cansimulator --help for list of supported PIDs.\n";
+        std::cerr << "Unknown PID: '" << pidName << "'. Run cansimulator --help for list of supported PIDs.\n";
         return 1;
     }
 
     OBDClient client;
-    auto result = client.query(*pid);
+    std::optional<QueryResult> result = client.query(*pid);
     if (!result) {
         std::cerr << "No response. Make sure cansimulator --simulate is running on vcan0\n";
         return 1;
     }
     
-    std::cout << std::left << std::setw(26) << result->name
-              << std::right << std::setw(10) << std::fixed << std::setprecision(2)
-              << result->value << "  " << result->unit
-              << "  (" << result->latency_us / 1000.0 << " ms)\n";
+    std::cout << std::left << std::setw(26) << result->name << 
+        std::right << std::setw(10) << std::fixed << std::setprecision(2) << 
+        result->value << "  " << result->unit << "  (" << result->latencyUs / 1000.0 << " ms)\n";
     
     return 0;
 }
 
-static int run_dump() {
-    static const std::vector<PID> all_pids = {
+static int runDump() {
+    static const std::vector<PID> allPIDs = {
         PID::RPM, PID::SPEED, PID::COOLANT_TEMP, PID::ENGINE_LOAD,
         PID::THROTTLE, PID::INTAKE_TEMP, PID::MAF, PID::FUEL_LEVEL,
         PID::RUNTIME, PID::DIST_DTC,
@@ -114,18 +112,18 @@ static int run_dump() {
 
     OBDClient client;
     std::cout << "\n=== CANSimulator Vehicle State Dump ===\n";
-    for (auto pid : all_pids) {
+
+    for (auto pid : allPIDs) {
         auto result = client.query(pid);
+
         if (result) {
-            std::cout << std::left << std::setw(26) << result->name
-                      << std::right << std::setw(10) << std::fixed
-                      << std::setprecision(2) << result->value
-                      << "  " << result->unit << "\n";
+            std::cout << std::left << std::setw(26) << result->name << 
+                std::right << std::setw(10) << std::fixed << 
+                std::setprecision(2) << result->value << "  " << result->unit << "\n";
         } 
         
         else {
-            std::cout << std::left << std::setw(26) << pid_to_name(pid)
-                      << " [no response]\n";
+            std::cout << std::left << std::setw(26) << pidToName(pid) << " [no response]\n";
         }
     }
     std::cout << "\n";
@@ -134,29 +132,27 @@ static int run_dump() {
 }
 
 int main(int argc, char* argv[]) {
-    std::signal(SIGINT,  signal_handler);
-    std::signal(SIGTERM, signal_handler);
+    std::signal(SIGINT,  signalHandler);
+    std::signal(SIGTERM, signalHandler);
 
-    if (argc < 2) { print_usage(); return 1; }
+    if (argc < 2) { printUsage(); return 1; }
 
     std::string mode = argv[1];
 
     if (mode == "--simulate") {
-        return run_simulate();
-
+        return runSimulate();
     } 
     
     else if (mode == "--query" && argc >= 3) {
-        return run_query(argv[2]);
-
+        return runQuery(argv[2]);
     } 
     
     else if (mode == "--dump") {
-        return run_dump();
+        return runDump();
     } 
     
     else if (mode == "--bench" && argc >= 4) {
-        auto pid = pid_from_name(argv[2]);
+        auto pid = pidFromName(argv[2]);
         if (!pid) {
             std::cerr << "Unknown PID: '" << argv[2] << "'\n"; return 1;
         }
@@ -166,12 +162,10 @@ int main(int argc, char* argv[]) {
         client.benchmark(*pid, count);
 
         return 0;
-
     } 
     
     else if (mode == "--help" || mode == "-h") {
-        print_usage(); return 0;
-
+        printUsage(); return 0;
     }
 
 #ifdef DASHBOARD_ENABLED
@@ -179,13 +173,13 @@ int main(int argc, char* argv[]) {
         Logger::info("Starting dashboard mode on vcan0");
 
         VehicleState state;
-        state.manual_control = true;
+        state.manualControl = true;
         Metrics   metrics;
         Simulator sim(state);
         OBDServer server(state, metrics);
 
-        std::thread sim_thread   ([&] { sim.run();    });
-        std::thread server_thread([&] { server.run(); });
+        std::thread simThread   ([&] { sim.run();    });
+        std::thread serverThread([&] { server.run(); });
 
         try {
             Dashboard dash(state, metrics);
@@ -194,15 +188,19 @@ int main(int argc, char* argv[]) {
             Logger::error(std::string("Dashboard error: ") + ex.what());
             state.running = false;
             server.stop();
-            sim_thread.join();
-            server_thread.join();
+
+            simThread.join();
+            serverThread.join();
+
             return 1;
         }
 
         state.running = false;
         server.stop();
-        sim_thread.join();
-        server_thread.join();
+
+        simThread.join();
+        serverThread.join();
+
         return 0;
     }
 #endif

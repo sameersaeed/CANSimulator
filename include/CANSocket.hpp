@@ -1,4 +1,5 @@
 #pragma once
+
 #include <linux/can.h>
 #include <optional>
 #include <string>
@@ -13,15 +14,15 @@ public:
     CANSocket(const CANSocket&)            = delete;
     CANSocket& operator=(const CANSocket&) = delete;
 
-    bool send_frame(const can_frame& frame);
-    bool set_filter(canid_t id, canid_t mask);
+    bool sendFrame(const can_frame& frame);
+    bool setFilter(canid_t id, canid_t mask);
 
-    std::optional<can_frame> receive_frame(int timeout_ms = 200);
+    std::optional<can_frame> receiveFrame(double timeoutS = 0.2);
 
-    int  fd()      const { return m_fd; }
-    bool is_open() const { return m_fd >= 0; }
+    int  fd()     const { return m_fd; }
+    bool isOpen() const { return m_fd >= 0; }
 
 private:
-    int         m_fd{-1};
+    int m_fd{-1};
     std::string m_interface;
 };

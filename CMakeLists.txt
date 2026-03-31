@@ -8,6 +8,7 @@ endif()
 set(CMAKE_CXX_STANDARD          17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS        OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_compile_options(-Wall -Wextra -Wpedantic -Wno-unused-parameter)
 
@@ -23,13 +24,13 @@ endif()
 find_package(Threads REQUIRED)
 
 add_library(cansimulator_lib STATIC
-    src/logger.cpp
-    src/metrics.cpp
-    src/pid_handler.cpp
-    src/can_socket.cpp
-    src/simulator.cpp
-    src/obd_server.cpp
-    src/obd_client.cpp
+    src/Logger.cpp
+    src/Metrics.cpp
+    src/PIDHandler.cpp
+    src/CANSocket.cpp
+    src/Simulator.cpp
+    src/OBDServer.cpp
+    src/OBDClient.cpp
 )
 target_include_directories(cansimulator_lib PUBLIC include)
 target_link_libraries(cansimulator_lib PUBLIC Threads::Threads)
@@ -46,7 +47,7 @@ endif()
 
 if(SDL2_FOUND AND SDL2_TTF_FOUND)
     message(STATUS "SDL2 found -- dashboard enabled (--dashboard)")
-    target_sources(cansimulator PRIVATE src/dashboard.cpp)
+    target_sources(cansimulator PRIVATE src/Dashboard.cpp)
     target_include_directories(cansimulator PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_TTF_INCLUDE_DIRS})
     target_link_libraries(cansimulator PRIVATE ${SDL2_LIBRARIES} ${SDL2_TTF_LIBRARIES})
     target_compile_definitions(cansimulator PRIVATE DASHBOARD_ENABLED)
@@ -69,7 +70,7 @@ if(BUILD_TESTS)
     set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(googletest)
 
-    add_executable(cansimulator_tests tests/test_pid.cpp)
+    add_executable(cansimulator_tests tests/TestPID.cpp)
     target_include_directories(cansimulator_tests PRIVATE include)
     target_link_libraries(cansimulator_tests PRIVATE cansimulator_lib GTest::gtest_main)
 

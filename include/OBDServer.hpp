@@ -3,10 +3,10 @@
 #include <atomic>
 #include <string>
 
-#include "can_socket.hpp"
-#include "metrics.hpp"
-#include "pid_handler.hpp"
-#include "vehicle_state.hpp"
+#include "CANSocket.hpp"
+#include "Metrics.hpp"
+#include "PIDHandler.hpp"
+#include "VehicleState.hpp"
 
 class OBDServer {
 public:
@@ -21,6 +21,6 @@ private:
     CANSocket          m_socket;
     std::atomic<bool>  m_running{true};
 
-    void   handle_request(const can_frame& frame);
-    double get_pid_value(PID pid) const noexcept;
+    void   handleRequest(const can_frame& frame);
+    double getPidValue(PID pid) const noexcept;
 };

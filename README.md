@@ -139,7 +139,7 @@ docker run --rm --privileged --network host cansimulator --dump
 | `cansimulator --simulate`    |                   | Start ECU simulator + OBD server             |
 | `cansimulator --query`       | `<PID>`           | Query one PID and print result               |
 | `cansimulator --dump`        |                   | Query all supported PIDs                     |
-| `cansimulator --bench`       | `<PID>` `<count>` | Latency / throughput benchmark               |
+| `cansimulator --bench`       | `<PID>` `<count>` | latency / throughput benchmark               |
 | `cansimulator --dashboard`   |                   | Live SDL2 instrument cluster (requires SDL2) |
 | `cansimulator --help`        |                   | Show this message                            |
 
@@ -220,7 +220,7 @@ cd build && ctest --output-on-failure
 
 ## Benchmarking
 
-The `--bench` mode sends the specified number of sequential OBD-II requests and reports the latency statistics
+The `--bench` mode sends the specified number of sequential OBD-II requests and reports the latencyUs statistics
 
 Sample benchmark with 1000 RPM requests:
 ```bash
