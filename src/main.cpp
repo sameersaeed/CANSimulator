@@ -31,7 +31,7 @@ static void printUsage() {
         "  cansimulator --simulate                  Start ECU simulator + server\n"
         "  cansimulator --query   <PID>             Query a single PID once\n"
         "  cansimulator --dump                      Dump all supported PIDs\n"
-        "  cansimulator --bench   <PID> <count>     latencyUs/throughput benchmark\n"
+        "  cansimulator --bench   <PID> <count>     latency / throughput benchmark\n"
 #ifdef DASHBOARD_ENABLED
         "  cansimulator --dashboard                 Live SDL2 dashboard with controls\n"
 #endif

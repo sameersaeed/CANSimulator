@@ -78,10 +78,10 @@ void OBDClient::benchmark(PID pid, int count) {
 
     std::cout << "\n=== CANSimulator Benchmark: " << pidToName(pid) << " x" << count << " ===\n" << std::fixed << std::setprecision(3) << 
         "  Successful:   " << success << "/" << count << "\n" << 
-        "  Avg latencyUs:  " << avg / 1000.0 << " ms\n" << 
-        "  p50 latencyUs:  " << percentile(50)  << " ms\n" << 
-        "  p95 latencyUs:  " << percentile(95)  << " ms\n" << 
-        "  p99 latencyUs:  " << percentile(99)  << " ms\n" << 
-        "  Max latencyUs:  " << latencies.back() / 1000.0 << " ms\n" << 
+        "  Avg latency:  " << avg / 1000.0 << " ms\n" << 
+        "  p50 latency:  " << percentile(50)  << " ms\n" << 
+        "  p95 latency:  " << percentile(95)  << " ms\n" << 
+        "  p99 latency:  " << percentile(99)  << " ms\n" << 
+        "  Max latency:  " << latencies.back() / 1000.0 << " ms\n" << 
         "  Throughput:   " << std::setprecision(0) << throughput << " req/s\n\n";
 }
