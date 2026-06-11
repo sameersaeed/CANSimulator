@@ -148,16 +148,15 @@ Dashboard::Dashboard(VehicleState& state, Metrics& metrics) : m_state(state), m_
 
     if (!m_fontLg.get() || !m_fontMd.get() || !m_fontSm.get()) throw std::runtime_error("no system font found - run: sudo apt install fonts-dejavu-core");
 
-    m_pollerRunning = true;
-    m_poller = std::thread([this]{ pollerLoop(); });
+    m_poller = std::jthread([this](std::stop_token tok){ pollerLoop(tok); });
 }
 
 // queries RPM via OBDClient every ~100ms so the CAN req counter increments
-void Dashboard::pollerLoop() {
+void Dashboard::pollerLoop(std::stop_token tok) {
     using namespace std::chrono_literals;
     OBDClient client;
 
-    while (m_pollerRunning.load() && m_state.running.load()) {
+    while (!tok.stop_requested() && m_state.running.load()) {
         client.query(PID::RPM, 0.2); // 0.2 sec timeout
         std::this_thread::sleep_for(100ms);
     }
@@ -375,5 +374,6 @@ void Dashboard::run() {
         if (elapsed < 16) SDL_Delay(16 - elapsed); // cap at ~60 fps
     }
 
+    m_poller.request_stop();
     m_state.running = false;
 }

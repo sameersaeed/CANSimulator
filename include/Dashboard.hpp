@@ -47,9 +47,8 @@ private:
     double m_throttle{0.0};
 
     // background thread, sends periodic OBD queries so the CAN req counter increments
-    std::thread       m_poller;
-    std::atomic<bool> m_pollerRunning{true};
-    void pollerLoop();
+    std::jthread         m_poller;
+    void pollerLoop(std::stop_token tok);
 
     void render();
     
