@@ -8,14 +8,16 @@
 
 #include <linux/can.h>
 
-#include "OBDClient.hpp"
+#include "client.hpp"
+
+namespace OBD {
 
 // only receive ECU 1 response frames (0x7E8), not sent requests
-OBDClient::OBDClient(const std::string& iface) : m_socket(iface) { 
+Client::Client(const std::string& iface) : m_socket(iface) { 
     m_socket.setFilter(0x7E8, 0x7FF);
 }
 
-std::optional<QueryResult> OBDClient::query(PID pid, double timeoutS) {
+std::optional<QueryResult> Client::query(PID::Type pid, double timeoutS) {
     can_frame request{};
     request.can_id  = 0x7DF; // OBD-II functional broadcast
     request.can_dlc = 8;
@@ -39,14 +41,14 @@ std::optional<QueryResult> OBDClient::query(PID pid, double timeoutS) {
 
         auto latencyUs = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start).count();
 
-        auto decoded = decodeResponse(frame->data[2], frame->data[3], frame->data[4]);
+        auto decoded = PID::decode(frame->data[2], frame->data[3], frame->data[4]);
         if (!decoded) return std::nullopt;
 
         return QueryResult{decoded->name, decoded->value, decoded->unit, latencyUs};
     }
 }
 
-void OBDClient::benchmark(PID pid, int count) {
+void Client::benchmark(PID::Type pid, int count) {
     std::vector<int64_t> latencies;
     latencies.reserve(count);
     int success = 0;
@@ -76,7 +78,7 @@ void OBDClient::benchmark(PID pid, int count) {
         return latencies[idx] / 1000.0;
     };
 
-    std::cout << "\n=== CANSimulator Benchmark: " << pidToName(pid) << " x" << count << " ===\n" << std::fixed << std::setprecision(3) << 
+    std::cout << "\n=== CANSimulator Benchmark: " << PID::toName(pid) << " x" << count << " ===\n" << std::fixed << std::setprecision(3) << 
         "  Successful:   " << success << "/" << count << "\n" << 
         "  Avg latency:  " << avg / 1000.0 << " ms\n" << 
         "  p50 latency:  " << percentile(50)  << " ms\n" << 
@@ -85,3 +87,5 @@ void OBDClient::benchmark(PID pid, int count) {
         "  Max latency:  " << latencies.back() / 1000.0 << " ms\n" << 
         "  Throughput:   " << std::setprecision(0) << throughput << " req/s\n\n";
 }
+
+} // namespace OBD

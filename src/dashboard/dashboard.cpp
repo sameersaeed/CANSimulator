@@ -9,8 +9,8 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
-#include "Dashboard.hpp"
-#include "OBDClient.hpp"
+#include "dashboard.hpp"
+#include "../obd/client.hpp"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -151,13 +151,14 @@ Dashboard::Dashboard(VehicleState& state, Metrics& metrics) : m_state(state), m_
     m_poller = std::jthread([this](std::stop_token tok){ pollerLoop(tok); });
 }
 
-// queries RPM via OBDClient every ~100ms so the CAN req counter increments
+// queries RPM via OBD client every ~100ms so the CAN req counter increments
 void Dashboard::pollerLoop(std::stop_token tok) {
     using namespace std::chrono_literals;
-    OBDClient client;
+    OBD::Client client;
 
     while (!tok.stop_requested() && m_state.running.load()) {
-        client.query(PID::RPM, 0.2); // 0.2 sec timeout
+        using OBD::PID::Type;
+        client.query(Type::RPM, 0.2); // 0.2 sec timeout
         std::this_thread::sleep_for(100ms);
     }
 }

@@ -1,4 +1,4 @@
-#include "Metrics.hpp"
+#include "metrics.hpp"
 
 // recordRequest takes a latency value in microseconds (us)
 void Metrics::recordRequest(int64_t latencyUs) noexcept {

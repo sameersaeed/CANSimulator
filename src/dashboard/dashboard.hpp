@@ -5,8 +5,8 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
-#include "Metrics.hpp"
-#include "VehicleState.hpp"
+#include "../telemetry/metrics.hpp"
+#include "../vehicle/vehicle_state.hpp"
 
 namespace Labels {
     inline constexpr const char* SPEED       = "SPEED";

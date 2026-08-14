@@ -16,19 +16,21 @@
 
 #include <stdexcept>
 
-#include "CANSocket.hpp"
+#include "socket.hpp"
 
-CANSocket::CANSocket(const std::string& interface) : m_interface(interface) {
+namespace CAN {
+
+Socket::Socket(const std::string_view interface) : m_interface(interface) {
     m_fd = ::socket(PF_CAN, SOCK_RAW, CAN_RAW);
     if (m_fd < 0) throw std::runtime_error("socket(PF_CAN) failed: " + std::string(strerror(errno)));
 
     // resolve interface name to ifindex
     struct ifreq ifr{};
-    std::strncpy(ifr.ifr_name, interface.c_str(), IFNAMSIZ - 1);
+    std::strncpy(ifr.ifr_name, std::string(interface).c_str(), IFNAMSIZ - 1);
     if (::ioctl(m_fd, SIOCGIFINDEX, &ifr) < 0) {
         ::close(m_fd); m_fd = -1;
 
-        throw std::runtime_error("Interface '" + interface + "' not found. "
+        throw std::runtime_error("Interface '" + std::string(interface) + "' not found. "
             "Run: sudo modprobe vcan && sudo ip link add dev vcan0 type vcan && sudo ip link set up vcan0");
     }
 
@@ -42,16 +44,16 @@ CANSocket::CANSocket(const std::string& interface) : m_interface(interface) {
     }
 }
 
-CANSocket::~CANSocket() {
+Socket::~Socket() {
     if (m_fd >= 0) ::close(m_fd);
 }
 
-bool CANSocket::sendFrame(const can_frame& frame) {
+bool Socket::sendFrame(const can_frame& frame) {
     ssize_t written = ::write(m_fd, &frame, sizeof(frame));
     return written == static_cast<ssize_t>(sizeof(frame));
 }
 
-std::optional<can_frame> CANSocket::receiveFrame(double timeoutS) {
+std::optional<can_frame> Socket::receiveFrame(double timeoutS) {
     fd_set readFds;
     FD_ZERO(&readFds);
     FD_SET(m_fd, &readFds);
@@ -74,7 +76,7 @@ std::optional<can_frame> CANSocket::receiveFrame(double timeoutS) {
 }
 
 // only accept frames where (can_id & mask) == id
-bool CANSocket::setFilter(canid_t id, canid_t mask) {
+bool Socket::setFilter(canid_t id, canid_t mask) {
     struct can_filter filter[1];
     
     filter[0].can_id   = id;
@@ -82,3 +84,5 @@ bool CANSocket::setFilter(canid_t id, canid_t mask) {
 
     return ::setsockopt(m_fd, SOL_CAN_RAW, CAN_RAW_FILTER, &filter, sizeof(filter)) == 0;
 }
+
+} // namespace CAN

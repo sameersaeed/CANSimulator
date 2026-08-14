@@ -3,7 +3,7 @@
 #include <iostream>
 #include <mutex>
 
-#include "Logger.hpp"
+#include "logger.hpp"
 
 void Logger::info (const std::string& msg) { log("INFO ", msg); }
 void Logger::warn (const std::string& msg) { log("WARN ", msg); }

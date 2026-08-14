@@ -1,8 +1,8 @@
 #pragma once
 
-#include "VehicleState.hpp"
+#include "../vehicle/vehicle_state.hpp"
 
-// updates VehicleState at ~20 Hz, simulating engine behaviour
+// updates vehicle's state at ~20 Hz, simulating engine behaviour
 class Simulator {
 public:
     explicit Simulator(VehicleState& state) : m_state(state) {}

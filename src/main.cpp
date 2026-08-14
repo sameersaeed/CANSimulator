@@ -2,20 +2,21 @@
 #include <csignal>
 #include <iomanip>
 #include <iostream>
+#include <optional>
 #include <string>
 #include <thread>
 #include <vector>
 
-#include "Logger.hpp"
-#include "Metrics.hpp"
-#include "OBDClient.hpp"
-#include "OBDServer.hpp"
-#include "PIDHandler.hpp"
-#include "Simulator.hpp"
-#include "VehicleState.hpp"
+#include "obd/client.hpp"
+#include "obd/pid_handler.hpp"
+#include "obd/server.hpp"
+#include "simulator/simulator.hpp"
+#include "telemetry/logger.hpp"
+#include "telemetry/metrics.hpp"
+#include "vehicle/vehicle_state.hpp"
 
 #ifdef DASHBOARD_ENABLED
-#include "Dashboard.hpp"
+#include "dashboard/dashboard.hpp"
 #endif
 
 static std::atomic<bool> g_running{true};
@@ -50,12 +51,12 @@ static int runSimulate() {
     VehicleState state;
     Metrics      metrics;
     Simulator    sim(state);
-    OBDServer    server(state, metrics);
+    OBD::Server  server(state, metrics);
 
     std::thread simThread   ([&] { sim.run();    });
     std::thread serverThread([&] { server.run(); });
 
-    Logger::info("Simulator and OBDServer are now running");
+    Logger::info("Simulator and OBD server are now running");
 
     // print metrics every 5 secs
     while (g_running.load()) {
@@ -83,14 +84,15 @@ static int runSimulate() {
 }
 
 static int runQuery(const std::string& pidName) {
-    std::optional<PID> pid = pidFromName(pidName);
+    using OBD::PID::Type;
+    std::optional<Type> pid = OBD::PID::fromName(pidName);
     if (!pid) {
         std::cerr << "Unknown PID: '" << pidName << "'. Run cansimulator --help for list of supported PIDs.\n";
         return 1;
     }
 
-    OBDClient client;
-    std::optional<QueryResult> result = client.query(*pid);
+    OBD::Client client;
+    std::optional<OBD::QueryResult> result = client.query(*pid);
     if (!result) {
         std::cerr << "No response. Make sure cansimulator --simulate is running on vcan0\n";
         return 1;
@@ -104,13 +106,14 @@ static int runQuery(const std::string& pidName) {
 }
 
 static int runDump() {
-    static const std::vector<PID> allPIDs = {
-        PID::RPM, PID::SPEED, PID::COOLANT_TEMP, PID::ENGINE_LOAD,
-        PID::THROTTLE, PID::INTAKE_TEMP, PID::MAF, PID::FUEL_LEVEL,
-        PID::RUNTIME, PID::DIST_DTC,
+    using OBD::PID::Type;
+    static const std::vector<Type> allPIDs = {
+        Type::RPM, Type::SPEED, Type::COOLANT_TEMP, Type::ENGINE_LOAD,
+        Type::THROTTLE, Type::INTAKE_TEMP, Type::MAF, Type::FUEL_LEVEL,
+        Type::RUNTIME, Type::DIST_DTC,
     };
 
-    OBDClient client;
+    OBD::Client client;
     std::cout << "\n=== CANSimulator Vehicle State Dump ===\n";
 
     for (auto pid : allPIDs) {
@@ -123,7 +126,7 @@ static int runDump() {
         } 
         
         else {
-            std::cout << std::left << std::setw(26) << pidToName(pid) << " [no response]\n";
+            std::cout << std::left << std::setw(26) << toName(pid) << " [no response]\n";
         }
     }
     std::cout << "\n";
@@ -152,13 +155,13 @@ int main(int argc, char* argv[]) {
     } 
     
     else if (mode == "--bench" && argc >= 4) {
-        auto pid = pidFromName(argv[2]);
+        auto pid = OBD::PID::fromName(argv[2]);
         if (!pid) {
             std::cerr << "Unknown PID: '" << argv[2] << "'\n"; return 1;
         }
 
         int count = std::stoi(argv[3]);
-        OBDClient client;
+        OBD::Client client;
         client.benchmark(*pid, count);
 
         return 0;
@@ -176,7 +179,7 @@ int main(int argc, char* argv[]) {
         state.manualControl = true;
         Metrics   metrics;
         Simulator sim(state);
-        OBDServer server(state, metrics);
+        OBD::Server server(state, metrics);
 
         std::thread simThread   ([&] { sim.run();    });
         std::thread serverThread([&] { server.run(); });

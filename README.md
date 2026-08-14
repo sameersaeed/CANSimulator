@@ -10,12 +10,12 @@ The simulator runs two components:
 - A vehicle simulator that continuously updates engine and vehicle state
 - An OBD server that listens for diagnostic requests on the CAN bus
 
-Clients send OBD-II requests to CAN ID **0x7DF**, and ECUs respond with PID values
-on IDs **0x7E8–0x7EF**. See the [Wikipedia](https://en.wikipedia.org/wiki/OBD-II_PIDs#CAN_(11-bit)_bus_format)
+Clients send OBD-II requests to CAN ID **0x7DF**, and the simulated ECU responds
+on CAN ID **0x7E8**. See the [Wikipedia](https://en.wikipedia.org/wiki/OBD-II_PIDs#CAN_(11-bit)_bus_format)
 page for details on the 11-bit CAN format
 
 ## Prerequisites
-- Linux
+- Linux (can use WSL if on Windows)
 - gcc or clang
 - cmake
 - can-utils
@@ -66,8 +66,8 @@ Run the simulator in one terminal and query it from another:
 ./build/cansimulator --simulate
 
 [12:00:01] [INFO ] CANSimulator starting on vcan0
-[12:00:01] [INFO ] OBDServer listening on vcan0 (CAN ID 0x7DF)
-[12:00:01] [INFO ] Simulator + OBDServer running. Ctrl+C to stop.
+[12:00:01] [INFO ] OBD server listening on vcan0 (CAN ID 0x7DF)
+[12:00:01] [INFO ] Simulator + OBD server running. Ctrl+C to stop.
 [12:00:06] [INFO ] Requests: 5 | Avg: 0.042 ms | MaxLat: 0.091 ms | RPM: 1247 | Speed: 14 km/h
 ```
 

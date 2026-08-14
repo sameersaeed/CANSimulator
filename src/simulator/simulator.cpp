@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <thread>
 
-#include "Simulator.hpp"
+#include "simulator.hpp"
 
 // simulation engine cycles through idle -> accel -> cruise -> decel via |sin(t)|
 

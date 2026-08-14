@@ -2,17 +2,19 @@
 
 #include <linux/can.h>
 #include <optional>
-#include <string>
+#include <string_view>
+
+namespace CAN {
 
 // wraps around raw CAN socket bound to a CAN interface (for example vcan0)
-class CANSocket {
+class Socket {
 public:
-    explicit CANSocket(const std::string& interface);
-    ~CANSocket();
+    explicit Socket(const std::string_view interface);
+    ~Socket();
 
     // non-copyable
-    CANSocket(const CANSocket&)            = delete;
-    CANSocket& operator=(const CANSocket&) = delete;
+    Socket(const Socket&)            = delete;
+    Socket& operator=(const Socket&) = delete;
 
     bool sendFrame(const can_frame& frame);
     bool setFilter(canid_t id, canid_t mask);
@@ -24,5 +26,7 @@ public:
 
 private:
     int m_fd{-1};
-    std::string m_interface;
+    std::string_view m_interface;
 };
+
+} // namespace CAN
