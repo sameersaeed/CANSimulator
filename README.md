@@ -10,20 +10,20 @@ The simulator runs two components:
 - A vehicle simulator that continuously updates engine and vehicle state
 - An OBD server that listens for diagnostic requests on the CAN bus
 
-Clients send OBD-II requests to CAN ID **0x7DF**, and the simulated ECU responds
-on CAN ID **0x7E8**. See the [Wikipedia](https://en.wikipedia.org/wiki/OBD-II_PIDs#CAN_(11-bit)_bus_format)
+Clients send OBD-II requests to CAN ID `0x7DF`, and the simulated ECU responds
+on CAN ID `0x7E8`. See the [Wikipedia](https://en.wikipedia.org/wiki/OBD-II_PIDs#CAN_(11-bit)_bus_format)
 page for details on the 11-bit CAN format
 
 ## Prerequisites
 - Linux (can use WSL if on Windows)
-- gcc or clang
-- cmake
-- can-utils
+- `gcc` or `clang`
+- CMake
+- `can-utils` (installable via Linux package managers or from the [Github](https://github.com/linux-can/can-utils))
 
 Optional:
 - Docker
 - Docker Compose
-- libsdl2-dev + libsdl2-ttf-dev (for the live dashboard)
+- `libsdl2-dev` + `libsdl2-ttf-dev` package (for the live dashboard)
 
 ---
 
@@ -95,7 +95,7 @@ Fuel Level                    74.96  %
 Distance Since DTC Clear        0.04  km
 ```
 
-**Spy on raw CAN traffic (can-utils package required):**
+**Watch raw CAN traffic (`can-utils` package required):**
 ```bash
 candump vcan0
 
@@ -105,9 +105,9 @@ vcan0  7E8   [8]  04 41 0C 12 34 00 00 00   # RPM response (0x1234/4 = 1165 rpm)
 
 ---
 
-## Docker / docker-compose
+## Docker / Docker Compose
 
-The vcan interface has to be created on the host first:
+The `vcan` interface has to be created on the host first:
 ```bash
 sudo modprobe vcan
 sudo ip link add dev vcan0 type vcan
@@ -180,8 +180,9 @@ Controls:
 | S / Down     | Brake       |
 | Q / Escape   | Quit        |
 
-Hold **W** to increase throttle and RPM - releasing it lets the engine coast down
-Hold **S** to brake - sensor values like coolant temp, MAF, and engine load update live as RPM changes
+Hold `W` to increase throttle and RPM - releasing it lets the engine coast down
+<br>
+Hold `S` to brake - sensor values like coolant temp, MAF, and engine load update live as RPM changes
 
 ---
 
